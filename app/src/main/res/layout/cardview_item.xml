@@ -1,0 +1,49 @@
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="140dp"
+    android:layout_marginLeft="14dp"
+    android:layout_marginRight="14dp"
+    android:layout_marginTop="16dp"
+    card_view:cardCornerRadius="4dp"
+    android:elevation="5dp"
+    android:clickable="true"
+    android:focusableInTouchMode="false"
+    android:focusable="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/tv_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="location"
+            android:textSize="20sp"
+            android:layout_marginTop="12dp"
+            android:layout_marginLeft="14dp"/>
+
+        <TextView
+            android:id="@+id/tv_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="description"
+            android:layout_below="@id/tv_location"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="14dp"/>
+
+        <TextView
+            android:id="@+id/tv_temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="20°"
+            android:textSize="30sp"
+            android:layout_below="@id/tv_description"
+            android:layout_marginTop="16dp"
+            android:layout_marginLeft="14dp"/>
+
+    </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
