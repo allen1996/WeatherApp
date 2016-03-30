@@ -5,12 +5,12 @@
     android:layout_height="140dp"
     android:layout_marginLeft="14dp"
     android:layout_marginRight="14dp"
-    android:layout_marginTop="16dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
     card_view:cardCornerRadius="4dp"
     android:elevation="5dp"
     android:clickable="true"
-    android:focusableInTouchMode="false"
-    android:focusable="true">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             android:text="location"
             android:textSize="20sp"
             android:layout_marginTop="12dp"
-            android:layout_marginLeft="14dp"/>
+            android:layout_marginLeft="20dp"/>
 
         <TextView
             android:id="@+id/tv_description"
@@ -32,7 +32,7 @@
             android:text="description"
             android:layout_below="@id/tv_location"
             android:layout_marginTop="8dp"
-            android:layout_marginLeft="14dp"/>
+            android:layout_marginLeft="20dp"/>
 
         <TextView
             android:id="@+id/tv_temperature"
@@ -42,7 +42,7 @@
             android:textSize="30sp"
             android:layout_below="@id/tv_description"
             android:layout_marginTop="16dp"
-            android:layout_marginLeft="14dp"/>
+            android:layout_marginLeft="20dp"/>
 
     </RelativeLayout>
 

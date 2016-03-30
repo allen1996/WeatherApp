@@ -10,14 +10,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
+        WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener{
 
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,19 +41,27 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             });
         }
 
+        //setup recyclerView
         recyclerView = (RecyclerView) findViewById(R.id.cardList);
-
         assert recyclerView != null;
         recyclerView.setHasFixedSize(true);
 
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(llm);
-        recyclerView.setAdapter(new WeatherInfoRecyclerAdapter(Database.createDummyWeatherData()));
 
+        WeatherInfoRecyclerAdapter recyclerAdapter = new WeatherInfoRecyclerAdapter(
+                Database.createDummyWeatherData());
+        //attach adapter with the itemClickListener
+        recyclerAdapter.attachRecyclerItemClickListener(this);
+        recyclerView.setAdapter(recyclerAdapter);
+
+        //setup swipeRefreshLayout
         swipeRefreshLayout = (SwipeRefreshLayout)findViewById(R.id.swipe_refresh_layout);
+        assert swipeRefreshLayout != null;
         swipeRefreshLayout.setOnRefreshListener(this);
-        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimary, R.color.colorAccent);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent,
+                R.color.colorPrimary, R.color.colorAccent);
     }
 
     @Override
@@ -74,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * called when user swipes down to refresh the weather
+     */
     @Override
     public void onRefresh() {
         //use handler to delay the refresh time as the method updateWeatherData is not implemented yet
@@ -93,5 +108,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                         .show();
             }
         }, 2500);
+    }
+
+    @Override
+    public void onRecyclerItemClick(View view, int position) {
+        Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
     }
 }
