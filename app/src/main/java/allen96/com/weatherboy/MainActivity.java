@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         if (id == R.id.action_settings) {
             return true;
         }
-
+        //zzzz
         return super.onOptionsItemSelected(item);
     }
 
