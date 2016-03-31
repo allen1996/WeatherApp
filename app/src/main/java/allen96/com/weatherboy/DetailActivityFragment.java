@@ -33,9 +33,9 @@ import java.util.Iterator;
 public class DetailActivityFragment extends Fragment {
 
     private ArrayAdapter<String> adapter;
-    private ArrayList<String> tempArray = new ArrayList<String>();
-    private ArrayList<String> descriptionList = new ArrayList<String>();
-    private HashSet<String> removeDuplicate = new HashSet<String>();
+    private ArrayList<String> tempArray = new ArrayList<>();
+    private ArrayList<String> descriptionList = new ArrayList<>();
+    private HashSet<String> removeDuplicate = new HashSet<>();
 
     public DetailActivityFragment() {
     }
@@ -44,8 +44,8 @@ public class DetailActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        ArrayList<String> weatherString = new ArrayList<String>();
-        adapter = new ArrayAdapter<String>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, weatherString);
+        ArrayList<String> weatherString = new ArrayList<>();
+        adapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, weatherString);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         FetchWeatherTask weatherTask = new FetchWeatherTask();
         weatherTask.execute("Hanoi,84");
@@ -83,8 +83,8 @@ public class DetailActivityFragment extends Fragment {
             final String OWM_MAX = "temp_max";
             final String OWM_MIN = "temp_min";
             final String OWM_DESCRIPTION = "description";
-            ArrayList<Double> highestTemp = new ArrayList<Double>();
-            ArrayList<Double> lowestTemp = new ArrayList<Double>();
+            ArrayList<Double> highestTemp = new ArrayList<>();
+            ArrayList<Double> lowestTemp = new ArrayList<>();
 
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
             JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
@@ -258,7 +258,7 @@ public class DetailActivityFragment extends Fragment {
         }
 
         public String chosenDescription() {
-            ArrayList<String> newArray = new ArrayList<String>();
+            ArrayList<String> newArray = new ArrayList<>();
             String weeklyDescription = "";
 
             for (int i = 0; i < descriptionList.size(); i++) {
@@ -283,16 +283,27 @@ public class DetailActivityFragment extends Fragment {
                     if (Integer.parseInt(newArray.get(i).split(" ")[0]) > Integer.parseInt(maxCount.split(" ")[0]))
                         maxCount = newArray.get(i);
                 }
-                weeklyDescription += maxCount.substring(1) + " mostly in next 7 days ";
+                weeklyDescription += maxCount.substring(2) + " mostly in next 7 days ";
             }
             if (newArray.size() < 3) {
                 for (int i = 0; i < newArray.size(); i++) {
                     if (Integer.parseInt(newArray.get(i).split(" ")[0]) > Integer.parseInt(maxCount.split(" ")[0]))
                         maxCount = newArray.get(i);
                 }
-                weeklyDescription += maxCount.substring(1) + " throughout the week ";
+                weeklyDescription += maxCount.substring(2) + " throughout the week ";
             }
-            return weeklyDescription;
+            return capitaliseFirstLetter(weeklyDescription);
+        }
+
+        /**
+         * capitalise the first letter passed in
+         * other letter should all be lowercase
+         * @return a string with first letter capitalised
+         */
+        public String capitaliseFirstLetter(String string) {
+            String result = string.substring(0,1).toUpperCase() + string.substring(1).toLowerCase();
+
+            return result;
         }
     }
 
