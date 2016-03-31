@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     /**
-     * called when user swipes down to refresh the weather. -Haman Ganda Testing Github-
+     * called when user swipes down to refresh the weather. -Haman Ganda Testing branch github-
      */
     @Override
     public void onRefresh() {
