@@ -1,5 +1,6 @@
 package allen96.com.weatherboy;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -62,7 +63,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent,
                 R.color.colorPrimary, R.color.colorAccent);
-        //change made hereeeeee
     }
 
     @Override
@@ -113,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRecyclerItemClick(View view, int position) {
+        Intent intent = new Intent(this, DetailActivity.class);
+        startActivity(intent);
         Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
     }
 }
