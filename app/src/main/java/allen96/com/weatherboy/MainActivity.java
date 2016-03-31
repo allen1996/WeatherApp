@@ -1,5 +1,6 @@
 package allen96.com.weatherboy;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         if (id == R.id.action_settings) {
             return true;
         }
-
+        //zzzz
         return super.onOptionsItemSelected(item);
     }
 
@@ -112,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRecyclerItemClick(View view, int position) {
+        Intent intent = new Intent(this, DetailActivity.class);
+        startActivity(intent);
         Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
     }
 }
