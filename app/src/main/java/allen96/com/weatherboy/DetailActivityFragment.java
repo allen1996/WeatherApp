@@ -32,10 +32,10 @@ import java.util.Iterator;
  */
 public class DetailActivityFragment extends Fragment {
 
-    private ArrayAdapter<String> adapter;
-    private ArrayList<String> tempArray = new ArrayList<>();
-    private ArrayList<String> descriptionList = new ArrayList<>();
-    private HashSet<String> removeDuplicate = new HashSet<>();
+    private static ArrayAdapter<String> adapter;
+    //private ArrayList<String> tempArray = new ArrayList<>();
+    //private ArrayList<String> descriptionList = new ArrayList<>();
+    private static HashSet<String> removeDuplicate = new HashSet<>();
 
     public DetailActivityFragment() {
     }
@@ -48,13 +48,16 @@ public class DetailActivityFragment extends Fragment {
         adapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, weatherString);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         FetchWeatherTask weatherTask = new FetchWeatherTask();
-        weatherTask.execute("Hanoi,84");
+        weatherTask.execute("Auckland,84");
         listView.setAdapter(adapter);
         return rootView;
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
+
+    public static class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+        public static ArrayList<String> tempArray = new ArrayList<>();
+        public static ArrayList<String> descriptionList = new ArrayList<>();
 
         private String getReadableDateString(long time) {
             // Because the API returns a unix timestamp (measured in seconds),
@@ -239,6 +242,7 @@ public class DetailActivityFragment extends Fragment {
             }
         }
 
+        //This method adds to the weekly desciption, it randomly picks high or low.
         public String findWeeklyDescription() {
             String weeklyDescription = "";
             String minTemp = tempArray.get(0);
@@ -257,6 +261,7 @@ public class DetailActivityFragment extends Fragment {
             return weeklyDescription;
         }
 
+        //This method chooses the best description to match the forecast.
         public String chosenDescription() {
             ArrayList<String> newArray = new ArrayList<>();
             String weeklyDescription = "";
