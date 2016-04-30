@@ -1,5 +1,6 @@
 package allen96.com.weatherboy;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -32,10 +33,12 @@ public class DetailActivityFragment extends Fragment {
         weatherTask.windSpeedText = (TextView)rootView.findViewById(R.id.detailed_wind);
         weatherTask.precipitationText = (TextView)rootView.findViewById(R.id.detailed_precipitation);
         weatherTask.temperatureText = (TextView)rootView.findViewById(R.id.detailed_temperature);
-        weatherTask.execute("Auckland,84");
         weatherTask.adapter = new ArrayAdapter<>(getActivity(), R.layout.list_item_forecast, R.id.list_item_forecast_textview, weatherString);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(weatherTask.adapter);
+        Intent intent = getActivity().getIntent();
+        String foreCastString = intent.getStringExtra(Intent.EXTRA_TEXT);
+        weatherTask.execute(foreCastString);
         return rootView;
     }
 
