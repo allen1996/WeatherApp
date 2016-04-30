@@ -7,9 +7,9 @@ public class WeatherInfo {
 
     protected String currentLocation;
     protected String weatherDescription;
-    protected int temperature;
+    protected String temperature;
 
-    public WeatherInfo(String currentLocation, String weatherDescription, int temperature) {
+    public WeatherInfo(String currentLocation, String weatherDescription, String temperature) {
         this.currentLocation = currentLocation;
         this.weatherDescription = weatherDescription;
         this.temperature = temperature;

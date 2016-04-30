@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         places.add("Auckland");
         places.add("Sydney");
         places.add("London");
+        places.add("Hanoi");
         FetchCurrentWeatherTask db = new FetchCurrentWeatherTask();
         db.execute(places);
 
@@ -291,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (dummyData != null) {
                 recyclerAdapter = new WeatherInfoRecyclerAdapter(dummyData);
                 //attach adapter with the itemClickListener
-                recyclerAdapter.attachRecyclerItemClickListener(this);
+                recyclerAdapter.attachRecyclerItemClickListener(MainActivity.this);
                 recyclerView.setAdapter(recyclerAdapter);
             }
         }
