@@ -63,6 +63,9 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
     public void attachRecyclerItemClickListener(OnRecyclerItemClickListener listener) {
         WeatherInfoRecyclerAdapter.listener = listener;
     }
+    public List<WeatherInfo> getList() {
+        return this.mWeatherLists;
+    }
 
     public static class WeatherInfoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 

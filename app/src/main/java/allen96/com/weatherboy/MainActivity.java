@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener {
-
+    private WeatherInfoRecyclerAdapter recyclerAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         places.add("Auckland");
         places.add("Sydney");
         places.add("London");
+        places.add("Hanoi");
+        places.add("Bangkok");
         FetchCurrentWeatherTask db = new FetchCurrentWeatherTask();
         db.execute(places);
 
@@ -101,7 +103,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         if (id == R.id.action_settings) {
             return true;
         }
-        //zzzz
         return super.onOptionsItemSelected(item);
     }
 
@@ -131,7 +132,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     @Override
     public void onRecyclerItemClick(View view, int position) {
-        Intent intent = new Intent(this, DetailActivity.class);
+        WeatherInfo weatherInfoString = recyclerAdapter.getList().get(position);
+        String locationString = weatherInfoString.currentLocation;
+        Intent intent = new Intent(this, DetailActivity.class).putExtra(Intent.EXTRA_TEXT,locationString);
         startActivity(intent);
         Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
     }
@@ -139,8 +142,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
 
 
+
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {
-        public WeatherInfoRecyclerAdapter recyclerAdapter;
+
 
         private String getReadableDateString(long time) {
             // Because the API returns a unix timestamp (measured in seconds),
@@ -291,7 +295,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (dummyData != null) {
                 recyclerAdapter = new WeatherInfoRecyclerAdapter(dummyData);
                 //attach adapter with the itemClickListener
-                recyclerAdapter.attachRecyclerItemClickListener(this);
+                recyclerAdapter.attachRecyclerItemClickListener(MainActivity.this);
                 recyclerView.setAdapter(recyclerAdapter);
             }
         }
