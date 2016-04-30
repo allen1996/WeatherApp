@@ -11,7 +11,6 @@ public class Database {
     protected static List<WeatherInfo> createDummyWeatherData() {
         List<WeatherInfo> dummyData = new ArrayList<>();
 
-
         return dummyData;
     }
 
