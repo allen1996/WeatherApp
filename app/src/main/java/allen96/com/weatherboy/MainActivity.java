@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         places.add("London");
         places.add("Hanoi");
         places.add("Bangkok");
+        places.add("Wellington");
         FetchCurrentWeatherTask db = new FetchCurrentWeatherTask();
         db.execute(places);
 
@@ -138,9 +139,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         startActivity(intent);
         Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
     }
-
-
-
 
 
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {
