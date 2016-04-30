@@ -14,22 +14,23 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     }
 
     public void testFetchWeather(){
-        DetailActivityFragment.FetchWeatherTask task = new DetailActivityFragment.FetchWeatherTask();
+        FetchWeatherTask task = new FetchWeatherTask();
         task.execute("Auckland");
         assertNotNull("Executing FetchWeatherTask() resulted in a null", task);
     }
 
     public void testDoInBackground(){
-        DetailActivityFragment.FetchWeatherTask task = new DetailActivityFragment.FetchWeatherTask();
+       FetchWeatherTask task = new FetchWeatherTask();
         task.doInBackground();
         assertNotNull("Executing doInBackground() resulted in a null", task);
     }
 
     public void testTempArray(){
-        DetailActivityFragment.FetchWeatherTask task = new DetailActivityFragment.FetchWeatherTask();
+        FetchWeatherTask task = new FetchWeatherTask();
         task.execute("Auckland");
         ArrayList<String> taskArray = task.tempArray;
         assertNotNull("Array holding tempuratures are null",taskArray);
+
     }
 
 
