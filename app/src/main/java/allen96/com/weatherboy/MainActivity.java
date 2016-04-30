@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (dummyData != null) {
                 recyclerAdapter = new WeatherInfoRecyclerAdapter(dummyData);
                 //attach adapter with the itemClickListener
-                recyclerAdapter.attachRecyclerItemClickListener(this);
+                recyclerAdapter.attachRecyclerItemClickListener(MainActivity.this);
                 recyclerView.setAdapter(recyclerAdapter);
             }
         }
