@@ -73,7 +73,12 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         double value = 28.9;
         long roundedValue = Math.round(value);
         String formattedValue = String.valueOf(roundedValue);
-        assertEquals("29",formattedValue);
+        assertEquals("29", formattedValue);
+    }
+    public void testWindDirectionTranslate() {
+        FetchWeatherTask task = new FetchWeatherTask();
+        double degree = 12;
+        assertEquals("NNE",task.translateDegree(degree));
     }
 
 }

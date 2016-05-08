@@ -57,7 +57,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         String highLowStr = roundedHigh + "/" + roundedLow;
         return highLowStr;
     }
-    private String translateDegree(double degree) {
+    public String translateDegree(double degree) {
         String direction = "";
        if(degree >= 348.75 || degree < 11.25)
            direction = "N";
