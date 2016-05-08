@@ -32,13 +32,15 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     protected ArrayList<String> tempArray = new ArrayList<>();
     protected ArrayList<String> descriptionList = new ArrayList<>();
     protected HashSet<String> removeDuplicate = new HashSet<>();
-    protected TextView humidityText; public TextView precipitationText;
+    protected TextView humidityText;
+    public TextView precipitationText;
     protected TextView descriptionText;
     protected TextView windSpeedText;
     protected TextView pressureText;
     protected TextView temperatureText;
     protected TextView cityText;
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+
     private String getReadableDateString(long time) {
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
@@ -54,6 +56,43 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
         String highLowStr = roundedHigh + "/" + roundedLow;
         return highLowStr;
+    }
+    private String translateDegree(double degree) {
+        String direction = "";
+       if(degree >= 348.75 || degree < 11.25)
+           direction = "N";
+        if(degree >= 11.25 && degree < 33.75)
+            direction = "NNE";
+        if(degree >= 33.75 && degree < 56.25)
+            direction = "NE";
+        if(degree >= 56.25 && degree < 78.75)
+            direction = "ENE";
+        if(degree >= 78.75 && degree < 101.25)
+            direction = "E";
+        if(degree >= 101.25 && degree < 123.75)
+            direction = "ESE";
+        if(degree >= 123.75 && degree < 146.25)
+            direction = "SE";
+        if(degree >= 146.25 && degree < 168.75)
+            direction = "SSE";
+        if(degree >= 168.75 && degree < 191.25)
+            direction = "S";
+        if(degree >= 191.25 && degree < 213.75)
+            direction = "SSW";
+        if(degree >= 213.75 && degree < 236.25)
+            direction = "SW";
+        if(degree >= 236.25 && degree < 258.75)
+            direction = "WSW";
+        if(degree >= 258.75 && degree < 281.25)
+            direction = "W";
+        if(degree >= 281.25 && degree < 303.75)
+            direction = "WNW";
+        if(degree >= 303.75 && degree < 326.25)
+            direction = "NW";
+        if(degree >= 326.25 && degree < 348.75)
+            direction = "NNW";
+        return direction;
+
     }
 
     private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
@@ -117,7 +156,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             long dateTime;
 
 
-
             // Cheating to convert this to UTC time, which is what we want anyhow
             dateTime = dayTime.setJulianDay(julianStartDay + i);
             day = getReadableDateString(dateTime);
@@ -141,14 +179,22 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             descriptionList.add(description);
             JSONObject windObject = dayForecast.getJSONObject(OWM_WIND);
             double speed = windObject.getDouble(OWM_WINDSPEED);
-            JSONObject rainObject = dayForecast.getJSONObject(OWM_RAIN);
-            String precipitation =""; //get the number out manually cause there is some problem with the API
-            for(int d = 6; d < String.valueOf(rainObject).toCharArray().length-1; d++) {
-                precipitation += String.valueOf(rainObject).charAt(d);
+            String precipitation = ""; //get the number out manually cause there is some problem with the API
+            boolean hasPrecipitation = false;
+            for(Iterator<String>iter = dayForecast.keys(); iter.hasNext();) { //check IF rain value is in the API or not
+                String key = iter.next();
+                if(key.equals(OWM_RAIN))
+                    hasPrecipitation = true;
             }
+            if(hasPrecipitation) {
+                JSONObject rainObject = dayForecast.getJSONObject(OWM_RAIN);
+                for (int d = 6; d < String.valueOf(rainObject).toCharArray().length - 1; d++) {
+                    precipitation += String.valueOf(rainObject).charAt(d);
+                }
+            }
+            double degree = windObject.getDouble(OWM_WIND_DIRECTION);
             Collections.addAll(detailedWeatherShow, cityName, description, String.valueOf(Math.round(temp)), String.valueOf(humidity), String.valueOf(pressure), String.valueOf(speed),
-                    precipitation);
-
+                    precipitation, translateDegree(degree));
         }
 
         for (String s : resultStrs) {
@@ -247,9 +293,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             temperatureText.setText(detailedWeatherShow.get(2));
             humidityText.append(detailedWeatherShow.get(3) + "%");
             pressureText.append(detailedWeatherShow.get(4) + " mb");
-            windSpeedText.append(detailedWeatherShow.get(5) + " km/h");
-            if(detailedWeatherShow.get(6) == null)
-                 precipitationText.append(" 0.0 cm");
+            windSpeedText.append(detailedWeatherShow.get(7) + " " + detailedWeatherShow.get(5) + " kph");
+            if (detailedWeatherShow.get(6).isEmpty())
+                precipitationText.append(" 0.0 cm");
             else
                 precipitationText.append(detailedWeatherShow.get(6) + " cm");
             for (String dayForecastStr : result) {
@@ -290,7 +336,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             removeDuplicate.add(count + " " + descriptionList.get(i));
         }
         Iterator it = removeDuplicate.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             newArray.add((String) it.next());
         }
         String maxCount = newArray.get(0);
@@ -317,10 +363,11 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     /**
      * capitalise the first letter passed in
      * other letter should all be lowercase
+     *
      * @return a string with first letter capitalised
      */
     public String capitaliseFirstLetter(String string) {
-        String result = string.substring(0,1).toUpperCase() + string.substring(1).toLowerCase();
+        String result = string.substring(0, 1).toUpperCase() + string.substring(1).toLowerCase();
 
         return result;
     }
