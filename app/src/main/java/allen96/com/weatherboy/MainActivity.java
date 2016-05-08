@@ -134,44 +134,83 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void onRecyclerItemClick(View view, int position) {
         WeatherInfo weatherInfoString = recyclerAdapter.getList().get(position);
         String locationString = weatherInfoString.currentLocation;
-        Intent intent = new Intent(this, DetailActivity.class).putExtra(Intent.EXTRA_TEXT,locationString);
+        Intent intent = new Intent(this, DetailActivity.class).putExtra(Intent.EXTRA_TEXT, locationString);
         startActivity(intent);
         Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
     }
 
+    private static String getReadableDateString(long time) {
+        // Because the API returns a unix timestamp (measured in seconds),
+        // it must be converted to milliseconds in order to be converted to valid date.
+        SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
+        return shortenedDateFormat.format(time);
+    }
 
+    private static String formatTemp(double value) {
+
+        // For presentation, assume the user doesn't care about tenths of a degree.
+        long roundedValue = Math.round(value);
+
+        String formattedValue = String.valueOf(roundedValue);
+        return formattedValue;
+    }
+
+    public static List<String> getCurrentWeather(String forecastJsonStr, int numDays ){
+        List<String> data = new ArrayList<>();
+        try {
+            final String OWM_LIST = "list";
+            final String OWM_WEATHER = "weather";
+            final String OWM_TEMPERATURE = "main";
+            final String OWM_TEMP = "temp";
+            final String OWM_MAX = "temp_max";
+            final String OWM_MIN = "temp_min";
+            final String OWM_DESCRIPTION = "description";
+            ArrayList<Double> highestTemp = new ArrayList<>();
+            ArrayList<Double> lowestTemp = new ArrayList<>();
+            JSONObject forecastJson = new JSONObject(forecastJsonStr);
+            JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
+            Time dayTime = new Time();
+            dayTime.setToNow();
+            // we start at the day returned by local time. Otherwise this is a mess.
+            int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+            // now we work exclusively in UTC
+            dayTime = new Time();
+            Log.v(LOG_TAG, "Test entry: " + getReadableDateString(dayTime.setJulianDay(julianStartDay)));
+            Log.v(LOG_TAG, Long.toString(dayTime.setJulianDay(julianStartDay))); //1458205200
+            String[] resultStrs = new String[numDays];
+            String day;
+            String description;
+            String currentTemp;
+            JSONObject dayForecast = weatherArray.getJSONObject(0);
+            long dateTime;
+            dateTime = dayTime.setJulianDay(julianStartDay);
+            day = getReadableDateString(dateTime);
+            JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+            description = weatherObject.getString(OWM_DESCRIPTION);
+            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
+            double value = temperatureObject.getDouble(OWM_TEMP);
+            double high = temperatureObject.getDouble(OWM_MAX);
+            double low = temperatureObject.getDouble(OWM_MIN);
+            currentTemp = formatTemp(value);
+            String temp = currentTemp;
+            data.add(description);
+            data.add(temp);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        }
+        return data;
+    }
 
 
 
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {
-
-
-        private String getReadableDateString(long time) {
-            // Because the API returns a unix timestamp (measured in seconds),
-            // it must be converted to milliseconds in order to be converted to valid date.
-            SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
-            return shortenedDateFormat.format(time);
-        }
-
-        private String formatHighLows(double high, double low) {
-
-            // For presentation, assume the user doesn't care about tenths of a degree.
-            long roundedHigh = Math.round(high);
-            long roundedLow = Math.round(low);
-
-            String highLowStr = roundedHigh + "/" + roundedLow;
-            return highLowStr;
-        }
-
-
         @Override
         protected List<WeatherInfo> doInBackground(ArrayList<String>... params) {
             if (params.length == 0) {
                 return null;
             }
             ArrayList<String> places = params[0];
-
-
             List<WeatherInfo> dummyData = new ArrayList<>();
             for (int i = 0; i <= places.size() - 1; i++) {
                 HttpURLConnection urlConnection = null;
@@ -240,52 +279,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 }
 
                 final String LOG_TAG = Database.class.getSimpleName();
-                try {
-                    final String OWM_LIST = "list";
-                    final String OWM_WEATHER = "weather";
-                    final String OWM_TEMPERATURE = "main";
-                    final String OWM_MAX = "temp_max";
-                    final String OWM_MIN = "temp_min";
-                    final String OWM_DESCRIPTION = "description";
-                    ArrayList<Double> highestTemp = new ArrayList<>();
-                    ArrayList<Double> lowestTemp = new ArrayList<>();
-                    JSONObject forecastJson = new JSONObject(forecastJsonStr);
-                    JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
-
-                    Time dayTime = new Time();
-                    dayTime.setToNow();
-
-                    // we start at the day returned by local time. Otherwise this is a mess.
-                    int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
-
-                    // now we work exclusively in UTC
-                    dayTime = new Time();
-                    Log.v(LOG_TAG, "Test entry: " + getReadableDateString(dayTime.setJulianDay(julianStartDay)));
-                    Log.v(LOG_TAG, Long.toString(dayTime.setJulianDay(julianStartDay))); //1458205200
-                    String[] resultStrs = new String[numDays];
-                    for (int j = 0; j < weatherArray.length(); j++) {
-                        String day;
-                        String description;
-                        String highAndLow;
-                        JSONObject dayForecast = weatherArray.getJSONObject(j);
-                        long dateTime;
-                        dateTime = dayTime.setJulianDay(julianStartDay + j);
-                        day = getReadableDateString(dateTime);
-                        JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
-                        description = weatherObject.getString(OWM_DESCRIPTION);
-                        JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
-                        double high = temperatureObject.getDouble(OWM_MAX);
-                        double low = temperatureObject.getDouble(OWM_MIN);
-                        highAndLow = formatHighLows(high, low);
-                        resultStrs[j] = day + " - " + description + " - " + Math.round(high) + "/" + Math.round(low);
-                        String temp = highAndLow;
-
-                        dummyData.add(new WeatherInfo(places.get(i), description, temp));
-                    }
-                } catch (JSONException e) {
-                    Log.e(LOG_TAG, e.getMessage(), e);
-                    e.printStackTrace();
-                }
+                List<String> info = getCurrentWeather(forecastJsonStr,numDays);
+                dummyData.add(new WeatherInfo(places.get(i), info.get(0), info.get(1)));
             }
             return dummyData;
         }
