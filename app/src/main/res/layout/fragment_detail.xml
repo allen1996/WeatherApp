@@ -38,9 +38,9 @@
                 android:id="@+id/detailed_description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/detailed_location"
-                android:layout_alignRight="@+id/detailed_location"
-                android:layout_below="@+id/detailed_location"
+                android:layout_alignLeft="@id/detailed_location"
+                android:layout_alignRight="@id/detailed_location"
+                android:layout_below="@id/detailed_location"
                 android:gravity="center"
                 android:text="description"
                 android:textSize="12sp" />
@@ -50,9 +50,9 @@
                 android:id="@+id/detailed_temperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/detailed_description"
-                android:layout_alignRight="@+id/detailed_description"
-                android:layout_below="@+id/detailed_description"
+                android:layout_alignLeft="@id/detailed_description"
+                android:layout_alignRight="@id/detailed_description"
+                android:layout_below="@id/detailed_description"
                 android:gravity="center"
                 android:text="20"
                 android:textSize="60sp" />
@@ -62,13 +62,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignLeft="@+id/detailed_humidity"
-                android:layout_alignStart="@+id/detailed_humidity"
+                android:layout_alignStart="@id/detailed_humidity"
                 android:layout_below="@+id/detailed_temperature"
                 android:text="Pressure: "
                 android:textSize="12sp" />
 
             <TextView
-                android:id="@+id/detailed_humidity"
+                android:id="@id/detailed_humidity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
@@ -84,9 +84,9 @@
                 android:id="@+id/detailed_precipitation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignTop="@+id/detailed_pressure"
-                android:layout_toEndOf="@+id/detailed_location"
-                android:layout_toRightOf="@+id/detailed_location"
+                android:layout_alignTop="@id/detailed_pressure"
+                android:layout_toEndOf="@id/detailed_location"
+                android:layout_toRightOf="@id/detailed_location"
                 android:text="Precipitation: "
                 android:textSize="12sp" />
 
@@ -94,9 +94,9 @@
                 android:id="@+id/detailed_wind"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@+id/detailed_precipitation"
-                android:layout_alignStart="@+id/detailed_precipitation"
-                android:layout_alignTop="@+id/detailed_humidity"
+                android:layout_alignLeft="@id/detailed_precipitation"
+                android:layout_alignStart="@id/detailed_precipitation"
+                android:layout_alignTop="@id/detailed_humidity"
                 android:text="Wind: "
                 android:textSize="12sp" />
 
@@ -104,9 +104,9 @@
                 android:id="@+id/detailed_sign"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignEnd="@+id/detailed_temperature"
-                android:layout_alignRight="@+id/detailed_temperature"
-                android:layout_alignTop="@+id/detailed_temperature"
+                android:layout_alignEnd="@id/detailed_temperature"
+                android:layout_alignRight="@id/detailed_temperature"
+                android:layout_alignTop="@id/detailed_temperature"
                 android:text="°"
                 android:textSize="25sp" />
 
@@ -120,7 +120,8 @@
         android:layout_height="match_parent"
         android:layout_gravity="right|bottom"
         android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"></ListView>
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:scrollbarStyle="outsideInset"/>
 
 
 </LinearLayout>

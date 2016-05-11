@@ -1,11 +1,9 @@
 package allen96.com.weatherboy;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -31,13 +29,26 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
+        WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener {
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+
     private WeatherInfoRecyclerAdapter recyclerAdapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private RecyclerView recyclerView;
-    private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private FetchCurrentWeatherTask db;
+    private ArrayList<String> places;
+
+    private SimpleDateFormat sdf;
+    private Date lastUpdateTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        sdf = new SimpleDateFormat("HH:mm a", Locale.getDefault());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         if (fab != null) {
@@ -57,32 +70,41 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             });
         }
 
-        //setup recyclerView
-        recyclerView = (RecyclerView) findViewById(R.id.cardList);
-        assert recyclerView != null;
-        recyclerView.setHasFixedSize(true);
-
-        LinearLayoutManager llm = new LinearLayoutManager(this);
-        llm.setOrientation(LinearLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(llm);
-
-        ArrayList<String> places = new ArrayList<String>();
-        places.add("Auckland");
-        places.add("Sydney");
-        places.add("London");
-        places.add("Hanoi");
-        places.add("Bangkok");
-        FetchCurrentWeatherTask db = new FetchCurrentWeatherTask();
-        db.execute(places);
-
-
-
         //setup swipeRefreshLayout
         swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
         assert swipeRefreshLayout != null;
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent,
                 R.color.colorPrimary, R.color.colorAccent);
+
+        //setup recyclerView
+        recyclerView = (RecyclerView) findViewById(R.id.cardList);
+        assert recyclerView != null;
+        recyclerView.setHasFixedSize(true);
+        LinearLayoutManager llm = new LinearLayoutManager(this);
+        llm.setOrientation(LinearLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(llm);
+
+        //create and set the recycler adapter
+        recyclerAdapter = new WeatherInfoRecyclerAdapter(
+                Database.createDummyWeatherData());
+        recyclerAdapter.attachRecyclerItemClickListener(this);
+        recyclerView.setAdapter(recyclerAdapter);
+
+        //add places to the ArrayList and fetch current temp data for each city
+        places = new ArrayList<>();
+        places.add("Auckland");
+        places.add("Sydney");
+        places.add("London");
+        places.add("Hanoi");
+        places.add("Bangkok");
+        places.add("Wellington");
+        db = new FetchCurrentWeatherTask();
+        db.execute(places);
+
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        lastUpdateTime = cal.getTime();
+        recyclerAdapter.setLastUpdateTime(getCurrentTime());
     }
 
     @Override
@@ -107,27 +129,36 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     /**
-     * called when user swipes down to refresh the weather. -Haman Ganda Testing Github-
+     * called when user swipes down to refresh the weather.
      */
     @Override
     public void onRefresh() {
-        //use handler to delay the refresh time as the method updateWeatherData is not implemented yet
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Database.updateWeatherData();
-                swipeRefreshLayout.setRefreshing(false);
-                Snackbar.make(recyclerView, "Weather has been updated", Snackbar.LENGTH_LONG)
-                        .setAction("CLOSE", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        Date updateTime = cal.getTime();
+        //time difference in minutes
+        long timeDifference = TimeUnit.MILLISECONDS.toMinutes(updateTime.getTime() - lastUpdateTime.getTime());
 
-                            }
-                        })
-                        .setActionTextColor(Color.YELLOW)
-                        .show();
-            }
-        }, 2500);
+        //if the time difference between two updates is within 10 minutes
+        // it should not execute the async task
+        if (timeDifference < 10) {
+            swipeRefreshLayout.setRefreshing(false);
+            Snackbar.make(recyclerView, "You have just updated " + timeDifference + " minutes ago.",
+                    Snackbar.LENGTH_LONG).show();
+        } else {
+            lastUpdateTime = updateTime;
+            recyclerAdapter.setLastUpdateTime(getCurrentTime());
+            db = new FetchCurrentWeatherTask();
+            db.execute(places);
+            swipeRefreshLayout.setRefreshing(false);
+            Snackbar.make(recyclerView, "Weather has been updated", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    public String getCurrentTime() {
+        String currentTime;
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        currentTime = sdf.format(cal.getTime());
+        return currentTime;
     }
 
     @Override
@@ -147,7 +178,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     private static String formatTemp(double value) {
-
         // For presentation, assume the user doesn't care about tenths of a degree.
         long roundedValue = Math.round(value);
 
@@ -228,14 +258,15 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     final String UNITS_PARAM = "units";
                     final String DAYS_PARAM = "cnt";
                     Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                            .appendQueryParameter(QUERY_PARAM, String.valueOf(places.get(i))) //params[0] refer to the String parameter of AsyncTask
+                            .appendQueryParameter(QUERY_PARAM, String.valueOf(places.get(i)))
                             .appendQueryParameter(APPID_PARAM, appid)
                             .appendQueryParameter(FORMAT_PARAM, format)
                             .appendQueryParameter(UNITS_PARAM, units)
                             .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
                             .build();
                     URL url = new URL(builtUri.toString());
-                    //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast?q=Auckland,64&APPID=dcec9f8e144965ee19f337a24f6ae445&mode=json&units=metric&cnt=7");
+                    //URL url = new URL("http://api.openweathermap.org/data/2.5/forecast?q=Auckland,
+                    //64&APPID=dcec9f8e144965ee19f337a24f6ae445&mode=json&units=metric&cnt=7");
                     urlConnection = (HttpURLConnection) url.openConnection();
                     urlConnection.setRequestMethod("GET");
                     urlConnection.connect();
@@ -278,7 +309,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     }
                 }
 
-                final String LOG_TAG = Database.class.getSimpleName();
                 List<String> info = getCurrentWeather(forecastJsonStr,numDays);
                 dummyData.add(new WeatherInfo(places.get(i), info.get(0), info.get(1)));
             }
@@ -288,10 +318,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         @Override
         protected void onPostExecute(List<WeatherInfo> dummyData) {
             if (dummyData != null) {
-                recyclerAdapter = new WeatherInfoRecyclerAdapter(dummyData);
-                //attach adapter with the itemClickListener
-                recyclerAdapter.attachRecyclerItemClickListener(MainActivity.this);
-                recyclerView.setAdapter(recyclerAdapter);
+                recyclerAdapter.updateWeatherList(dummyData);
+                recyclerAdapter.notifyDataSetChanged();
             }
         }
     }

@@ -12,11 +12,13 @@ import java.util.List;
 /**
  * Created by allen on 29/03/16.
  */
-public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
-        WeatherInfoRecyclerAdapter.WeatherInfoViewHolder> {
+public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
+        <WeatherInfoRecyclerAdapter.WeatherInfoViewHolder> {
 
     private List<WeatherInfo> mWeatherLists;
     static OnRecyclerItemClickListener listener;
+
+    private String lastUpdateTime = "11:02 AM";
 
     private static final String LOG_TAG = WeatherInfoRecyclerAdapter.class.getSimpleName();
 
@@ -30,6 +32,7 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
      */
     @Override
     public WeatherInfoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Log.v("viewHolder", "onCreateViewHolder called");
         View itemView = LayoutInflater.from(parent.getContext()).
                 inflate(R.layout.cardview_item, parent, false);
 
@@ -42,10 +45,12 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
      */
     @Override
     public void onBindViewHolder(WeatherInfoViewHolder holder, int position) {
+        Log.v("viewHolder", "onBindViewHolder called");
         WeatherInfo weatherInfo = mWeatherLists.get(position);
         holder.mLocation.setText(weatherInfo.currentLocation);
         holder.mDescription.setText(weatherInfo.weatherDescription);
         holder.mTemperature.setText(weatherInfo.temperature + "°");
+        holder.mUpdateTime.setText(lastUpdateTime);
     }
 
     /**
@@ -56,6 +61,7 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
         return mWeatherLists.size();
     }
 
+
     public interface OnRecyclerItemClickListener {
         void onRecyclerItemClick(View view, int position);
     }
@@ -63,8 +69,17 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
     public void attachRecyclerItemClickListener(OnRecyclerItemClickListener listener) {
         WeatherInfoRecyclerAdapter.listener = listener;
     }
+
     public List<WeatherInfo> getList() {
         return this.mWeatherLists;
+    }
+
+    public void updateWeatherList(List<WeatherInfo> weatherLists) {
+        mWeatherLists = weatherLists;
+    }
+
+    public void setLastUpdateTime(String lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 
     public static class WeatherInfoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
@@ -72,6 +87,7 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
         protected TextView mLocation;
         protected TextView mDescription;
         protected TextView mTemperature;
+        protected TextView mUpdateTime;
 
         public WeatherInfoViewHolder(View itemView) {
             super(itemView);
@@ -79,6 +95,8 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter<
             mLocation = (TextView) itemView.findViewById(R.id.tv_location);
             mDescription = (TextView) itemView.findViewById(R.id.tv_description);
             mTemperature = (TextView) itemView.findViewById(R.id.tv_temperature);
+            mUpdateTime = (TextView) itemView.findViewById(R.id.tv_updateTime);
+
         }
 
         /**

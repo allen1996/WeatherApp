@@ -21,7 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="location"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:layout_marginTop="12dp"
             android:layout_marginLeft="20dp"/>
 
@@ -39,10 +39,33 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="20°"
-            android:textSize="30sp"
+            android:textSize="36sp"
             android:layout_below="@id/tv_description"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:layout_marginLeft="20dp"/>
+
+        <TextView
+            android:id="@+id/tv_updateTimeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Last update:"
+            android:textSize="10sp"
+            android:layout_alignTop="@id/tv_temperature"
+            android:layout_marginTop="10dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="40dp"
+            />
+
+        <TextView
+            android:id="@+id/tv_updateTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:02 AM"
+            android:textSize="10sp"
+            android:layout_below="@id/tv_updateTimeLabel"
+            android:layout_marginTop="4dp"
+            android:layout_alignLeft="@id/tv_updateTimeLabel"
+            />
 
     </RelativeLayout>
 

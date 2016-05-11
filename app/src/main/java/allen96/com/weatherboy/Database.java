@@ -11,6 +11,12 @@ public class Database {
     protected static List<WeatherInfo> createDummyWeatherData() {
         List<WeatherInfo> dummyData = new ArrayList<>();
 
+        dummyData.add(new WeatherInfo("Auckland", "Partly Cloudy", "21"));
+        dummyData.add(new WeatherInfo("London", "Partly Cloudy", "6"));
+        dummyData.add(new WeatherInfo("Cupertino", "Partly Cloudy", "15"));
+        dummyData.add(new WeatherInfo("Sydney", "Drizzle", "21"));
+        dummyData.add(new WeatherInfo("Wellington", "Mostly Cloudy", "17"));
+
         return dummyData;
     }
 
