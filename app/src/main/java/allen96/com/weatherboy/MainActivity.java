@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private FetchCurrentWeatherTask db;
     private ArrayList<String> places;
 
+    private String abc = "hello";
+
     private SimpleDateFormat sdf;
     private Date lastUpdateTime;
 
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         // it should not execute the async task
         if (timeDifference < 10) {
             swipeRefreshLayout.setRefreshing(false);
-            Snackbar.make(recyclerView, "You have just updated " + timeDifference + " minutes ago.",
+            Snackbar.make(recyclerView, "You just updated " + timeDifference + " minutes ago.",
                     Snackbar.LENGTH_LONG).show();
         } else {
             lastUpdateTime = updateTime;
