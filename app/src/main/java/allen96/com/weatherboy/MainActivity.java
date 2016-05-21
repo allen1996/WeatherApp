@@ -1,9 +1,11 @@
 package allen96.com.weatherboy;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -46,11 +48,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private RecyclerView recyclerView;
     private FetchCurrentWeatherTask db;
     private ArrayList<String> places;
-
-    private String abc = "hello";
-
     private SimpleDateFormat sdf;
     private Date lastUpdateTime;
+    protected static boolean isMetric;
+    protected static boolean isCentimeters;
+    protected static boolean isMph;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerView.setAdapter(recyclerAdapter);
 
         //add places to the ArrayList and fetch current temp data for each city
+        getUnitType();
         places = new ArrayList<>();
         places.add("Auckland");
         places.add("Sydney");
@@ -103,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         places.add("Wellington");
         db = new FetchCurrentWeatherTask();
         db.execute(places);
-
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         lastUpdateTime = cal.getTime();
         recyclerAdapter.setLastUpdateTime(getCurrentTime());
@@ -125,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -144,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         // it should not execute the async task
         if (timeDifference < 10) {
             swipeRefreshLayout.setRefreshing(false);
-            Snackbar.make(recyclerView, "You just updated " + timeDifference + " minutes ago.",
+            Snackbar.make(recyclerView, "You have just updated " + timeDifference + " minutes ago.",
                     Snackbar.LENGTH_LONG).show();
         } else {
             lastUpdateTime = updateTime;
@@ -178,16 +181,40 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
         return shortenedDateFormat.format(time);
     }
+    public void getUnitType() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String unitType = sharedPrefs.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_metric));
+        if (unitType.equals(getString(R.string.pref_units_imperial))) {
+            isMetric = false;
+        }
+        else
+            isMetric = true;
+        String preUnitType = sharedPrefs.getString(getString(R.string.pref_preunits_key), getString(R.string.pref_preunits_cm));
+        if (preUnitType.equals(getString(R.string.pref_preunits_inch))) {
+            isCentimeters = false;
+        }
+        else
+            isCentimeters = true;
+        String windUnitType = sharedPrefs.getString(getString(R.string.pref_windunits_key), getString(R.string.pref_windunits_mph));
+        if (windUnitType.equals(getString(R.string.pref_windunits_kph))) {
+            isMph = false;
+        }
+        else
+            isMph = true;
 
-    private static String formatTemp(double value) {
+    }
+
+    public static String formatTemp(double value) {
         // For presentation, assume the user doesn't care about tenths of a degree.
+        if(isMetric == false) {
+            value = (value * 1.8) + 32;
+        }
         long roundedValue = Math.round(value);
-
         String formattedValue = String.valueOf(roundedValue);
         return formattedValue;
     }
 
-    public static List<String> getCurrentWeather(String forecastJsonStr, int numDays ){
+    public static List<String> getCurrentWeather(String forecastJsonStr, int numDays) {
         List<String> data = new ArrayList<>();
         try {
             final String OWM_LIST = "list";
@@ -235,8 +262,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
 
-
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {
+
         @Override
         protected List<WeatherInfo> doInBackground(ArrayList<String>... params) {
             if (params.length == 0) {
@@ -311,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                     }
                 }
 
-                List<String> info = getCurrentWeather(forecastJsonStr,numDays);
+                List<String> info = getCurrentWeather(forecastJsonStr, numDays);
                 dummyData.add(new WeatherInfo(places.get(i), info.get(0), info.get(1)));
             }
             return dummyData;

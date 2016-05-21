@@ -49,7 +49,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     }
 
     private String formatHighLows(double high, double low) {
-
         // For presentation, assume the user doesn't care about tenths of a degree.
         long roundedHigh = Math.round(high);
         long roundedLow = Math.round(low);
@@ -171,15 +170,22 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             double high = temperatureObject.getDouble(OWM_MAX);
             double low = temperatureObject.getDouble(OWM_MIN);
             double temp = temperatureObject.getDouble(OWM_TEMP);
+            if(MainActivity.isMetric == false) {
+                temp = convertMetricToImperial(temp);
+                high = convertMetricToImperial(high);
+                low = convertMetricToImperial(low);
+            }
             int humidity = temperatureObject.getInt(OWM_HUMIDITY);
             double pressure = temperatureObject.getDouble(OWM_PRESSURE);
             highAndLow = formatHighLows(high, low);
-            resultStrs[i] = day + " - " + description + " - " + Math.round(high) + "/" + Math.round(low);
+            resultStrs[i] = day + " - " + description + " - " + highAndLow;
             tempArray.add(Long.toString(Math.round(high)) + " on " + day.split(" ")[0]);
             tempArray.add(Long.toString(Math.round(low)) + " on " + day.split(" ")[0]);
             descriptionList.add(description);
             JSONObject windObject = dayForecast.getJSONObject(OWM_WIND);
-            double speed = windObject.getDouble(OWM_WINDSPEED);
+            double speed = Math.round(windObject.getDouble(OWM_WINDSPEED) * 2.23693629 * 1000.0)/1000.0; //round up to 3 decimal places
+            if(MainActivity.isMph == false)
+                speed = Math.round(speed * 1.609344 * 1000.0)/1000.0;
             String precipitation = ""; //get the number out manually cause there is some problem with the API
             boolean hasPrecipitation = false;
             for (Iterator<String> iter = dayForecast.keys(); iter.hasNext(); ) { //check IF rain value is in the API or not
@@ -191,6 +197,11 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
                 JSONObject rainObject = dayForecast.getJSONObject(OWM_RAIN);
                 for (int d = 6; d < String.valueOf(rainObject).toCharArray().length - 1; d++) {
                     precipitation += String.valueOf(rainObject).charAt(d);
+                }
+                if(!precipitation.equals("")) {
+                    precipitation = String.valueOf(Math.round(Double.parseDouble(precipitation) / 10 * 1000.0)/1000.0); //convert mm to cm and round up to 3 decimal palces
+                    if(MainActivity.isCentimeters == false) //if inches unit
+                        precipitation = String.valueOf(Math.round(Double.parseDouble(precipitation) * 0.393700787 * 1000.0)/1000.0); //round up to 3 decimal places.
                 }
             }
             double degree = windObject.getDouble(OWM_WIND_DIRECTION);
@@ -293,12 +304,24 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             descriptionText.setText(capitaliseFirstLetter(detailedWeatherShow.get(1)));
             temperatureText.setText(detailedWeatherShow.get(2));
             humidityText.append(detailedWeatherShow.get(3) + "%");
-            pressureText.append(detailedWeatherShow.get(4) + " mb");
-            windSpeedText.append(detailedWeatherShow.get(7) + " " + detailedWeatherShow.get(5) + " kph");
-            if (detailedWeatherShow.get(6).isEmpty())
-                precipitationText.append(" 0.0 cm");
+            pressureText.append(detailedWeatherShow.get(4) + " hPa");
+            windSpeedText.append(detailedWeatherShow.get(7) + " " + detailedWeatherShow.get(5));
+            if(MainActivity.isMph)
+                windSpeedText.append(" mph");
             else
-                precipitationText.append(detailedWeatherShow.get(6) + " cm");
+                windSpeedText.append(" kph");
+            if (detailedWeatherShow.get(6).isEmpty()) {
+                if(MainActivity.isCentimeters)
+                    precipitationText.append(" 0.0 cm");
+                else
+                    precipitationText.append(" 0.0 in");
+            }
+            else {
+                if(MainActivity.isCentimeters)
+                    precipitationText.append(detailedWeatherShow.get(6) + " cm");
+                else
+                    precipitationText.append(detailedWeatherShow.get(6) + " in");
+            }
             for (String dayForecastStr : result) {
                 adapter.add(dayForecastStr);
             }
@@ -371,5 +394,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         String result = string.substring(0, 1).toUpperCase() + string.substring(1).toLowerCase();
 
         return result;
+    }
+    public double convertMetricToImperial(double metricTemp) {
+        metricTemp = (metricTemp * 1.8) + 32;
+        return metricTemp;
     }
 }

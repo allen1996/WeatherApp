@@ -25,7 +25,6 @@ public class DetailActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ArrayList<String> weatherString = new ArrayList<>();
         FetchWeatherTask weatherTask = new FetchWeatherTask();
-
         weatherTask.cityText = (TextView) rootView.findViewById(R.id.detailed_location);
         weatherTask.humidityText = (TextView) rootView.findViewById(R.id.detailed_humidity);
         weatherTask.pressureText = (TextView) rootView.findViewById(R.id.detailed_pressure);
@@ -44,9 +43,4 @@ public class DetailActivityFragment extends Fragment {
         return rootView;
     }
 
-
 }
-
-
-
-

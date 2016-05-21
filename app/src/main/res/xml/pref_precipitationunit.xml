@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:title ="@string/pref_preunits_label"
+        android:key="@string/pref_preunits_key"
+        android:defaultValue="@string/pref_preunits_cm"
+        android:entryValues="@array/pref_preunits_values"
+        android:entries="@array/pref_preunits_options" />
+</PreferenceScreen>

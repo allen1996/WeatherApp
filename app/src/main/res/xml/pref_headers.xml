@@ -1,0 +1,15 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:fragment="allen96.com.weatherboy.SettingsActivity$TempUnitPreferenceFragment"
+        android:icon="@drawable/ic_info_black_24dp"
+        android:title="@string/pref_units_label" />
+    <header
+        android:fragment="allen96.com.weatherboy.SettingsActivity$PrecipitationUnitPreferenceFragment"
+        android:icon="@drawable/ic_info_black_24dp"
+        android:title="@string/pref_preunits_label" />
+
+    <header
+        android:fragment="allen96.com.weatherboy.SettingsActivity$WindSpeedPreferenceFragment"
+        android:icon="@drawable/ic_info_black_24dp"
+        android:title="@string/pref_windunits_label" />
+</preference-headers>

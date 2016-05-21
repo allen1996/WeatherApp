@@ -28,7 +28,7 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
     }
 
     public void testDoInBackground(){
-       FetchWeatherTask task = new FetchWeatherTask();
+        FetchWeatherTask task = new FetchWeatherTask();
         task.doInBackground();
         assertNotNull("Executing doInBackground() resulted in a null", task);
     }
@@ -80,5 +80,12 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         double degree = 12;
         assertEquals("NNE",task.translateDegree(degree));
     }
+    public void testUnitsConverter() {
+        FetchWeatherTask task = new FetchWeatherTask();
+        double defaultMetricTemp = 15;
+        double defaultPrecipitation = 0.2;
+        double defaultWindSpeed = 0.2;
+        assertEquals(59.0, task.convertMetricToImperial(defaultMetricTemp));
 
+    }
 }
