@@ -37,6 +37,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="allen96.com.weatherboy.MainActivity" />
         </activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDS8nky3h3JI2AQXjnZspAwtzcenFAj4vA"/>
+
     </application>
 
 </manifest>
