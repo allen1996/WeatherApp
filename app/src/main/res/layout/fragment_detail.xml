@@ -50,12 +50,12 @@
                 android:id="@+id/detailed_temperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignLeft="@id/detailed_description"
-                android:layout_alignRight="@id/detailed_description"
-                android:layout_below="@id/detailed_description"
                 android:gravity="center"
                 android:text="20"
-                android:textSize="60sp" />
+                android:textSize="60sp"
+                android:layout_below="@+id/detailed_description"
+                android:layout_alignLeft="@+id/detailed_pressure"
+                android:layout_alignStart="@+id/detailed_pressure" />
 
             <TextView
                 android:id="@+id/detailed_pressure"
@@ -109,6 +109,17 @@
                 android:layout_alignTop="@id/detailed_temperature"
                 android:text="°"
                 android:textSize="25sp" />
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:maxHeight="100dp"
+                android:maxWidth="100dp"
+                android:id="@+id/imageView2"
+                android:scaleType="fitCenter"
+                android:layout_alignTop="@+id/detailed_location"
+                android:layout_toRightOf="@+id/detailed_location"
+                android:layout_toEndOf="@+id/detailed_location" />
 
         </RelativeLayout>
 

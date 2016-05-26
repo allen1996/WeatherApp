@@ -66,6 +66,15 @@
             android:layout_marginTop="4dp"
             android:layout_alignLeft="@id/tv_updateTimeLabel"
             />
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageView"
+            android:layout_above="@+id/tv_temperature"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignLeft="@+id/tv_updateTimeLabel"
+            android:layout_alignStart="@+id/tv_updateTimeLabel" />
 
     </RelativeLayout>
 

@@ -1,10 +1,13 @@
 package allen96.com.weatherboy;
 
+import android.media.Image;
+import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -51,6 +54,30 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         holder.mDescription.setText(weatherInfo.weatherDescription);
         holder.mTemperature.setText(weatherInfo.temperature + "°");
         holder.mUpdateTime.setText(lastUpdateTime);
+
+        setIcon(holder.mIcon, weatherInfo.weatherDescription);
+    }
+
+    //This method will set the icon depending on the description provided
+    public void setIcon(ImageView icon, String desc){
+        if(desc.contains("clear"))
+            icon.setImageResource(R.drawable.clear);
+        else if (desc.contains("cloud") ||desc.contains("calm") || desc.contains("clouds"))
+            icon.setImageResource(R.drawable.cloud);
+        else if (desc.contains("sun") || desc.contains("sleet"))
+            icon.setImageResource(R.drawable.sunny);
+        else if (desc.contains("rain") || desc.contains("drizzle"))
+            icon.setImageResource(R.drawable.rain);
+        else if (desc.contains("thunderstorm"))
+            icon.setImageResource(R.drawable.thunderstorms);
+        else if (desc.contains("snow"))
+            icon.setImageResource(R.drawable.snow);
+        else if (desc.contains("fog"))
+            icon.setImageResource(R.drawable.fog);
+        else if (desc.contains("breeze"))
+            icon.setImageResource(R.drawable.wind);
+        else if (desc.contains("mist"))
+            icon.setImageResource(R.drawable.mist);
     }
 
     /**
@@ -88,7 +115,7 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         protected TextView mDescription;
         protected TextView mTemperature;
         protected TextView mUpdateTime;
-
+        protected ImageView mIcon;
         public WeatherInfoViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
@@ -96,6 +123,7 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
             mDescription = (TextView) itemView.findViewById(R.id.tv_description);
             mTemperature = (TextView) itemView.findViewById(R.id.tv_temperature);
             mUpdateTime = (TextView) itemView.findViewById(R.id.tv_updateTime);
+            mIcon = (ImageView) itemView.findViewById(R.id.imageView);
 
         }
 

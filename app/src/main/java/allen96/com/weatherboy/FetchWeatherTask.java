@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.text.format.Time;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -39,6 +40,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
     protected TextView pressureText;
     protected TextView temperatureText;
     protected TextView cityText;
+    protected ImageView icon;
     private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
 
     private String getReadableDateString(long time) {
@@ -302,6 +304,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             adapter.add(findWeeklyDescription());
             cityText.setText(detailedWeatherShow.get(0));
             descriptionText.setText(capitaliseFirstLetter(detailedWeatherShow.get(1)));
+            setIcon(icon, descriptionText.getText().toString());
             temperatureText.setText(detailedWeatherShow.get(2));
             humidityText.append(detailedWeatherShow.get(3) + "%");
             pressureText.append(detailedWeatherShow.get(4) + " hPa");
@@ -326,6 +329,28 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
                 adapter.add(dayForecastStr);
             }
         }
+    }
+
+    //method used to set the icons depending on weather description
+    public void setIcon(ImageView icon, String desc){
+        if(desc.contains("clear") || desc.contains("Clear"))
+            icon.setImageResource(R.drawable.clear);
+        else if (desc.contains("cloud") ||desc.contains("calm") || desc.contains("clouds"))
+            icon.setImageResource(R.drawable.cloud);
+        else if (desc.contains("sun"))
+            icon.setImageResource(R.drawable.sunny);
+        else if (desc.contains("rain") || desc.contains("drizzle"))
+            icon.setImageResource(R.drawable.rain);
+        else if (desc.contains("thunderstorm"))
+            icon.setImageResource(R.drawable.thunderstorms);
+        else if (desc.contains("snow") || desc.contains("sleet"))
+            icon.setImageResource(R.drawable.snow);
+        else if (desc.contains("fog"))
+            icon.setImageResource(R.drawable.fog);
+        else if (desc.contains("breeze"))
+            icon.setImageResource(R.drawable.wind);
+        else if (desc.contains("mist"))
+            icon.setImageResource(R.drawable.mist);
     }
 
     public String findWeeklyDescription() {

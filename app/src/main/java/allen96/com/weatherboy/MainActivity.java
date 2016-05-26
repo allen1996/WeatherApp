@@ -1,7 +1,9 @@
 package allen96.com.weatherboy;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,10 +11,10 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
@@ -20,9 +22,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
@@ -67,12 +72,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     protected static boolean isMetric;
     protected static boolean isCentimeters;
     protected static boolean isMph;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        android.support.v7.widget.Toolbar toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         sdf = new SimpleDateFormat("HH:mm a", Locale.getDefault());
@@ -109,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerView.setAdapter(recyclerAdapter);
 
         //add places to the ArrayList and fetch current temp data for each city
-        getUnitType();
+        //getUnitType();
         places = new ArrayList<>();
         places.add("Auckland");
         places.add("Sydney");
@@ -121,15 +131,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         db.execute(places);
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         lastUpdateTime = cal.getTime();
-        recyclerAdapter.setLastUpdateTime(getCurrentTime());
+       // recyclerAdapter.setLastUpdateTime(getCurrentTime());
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void openAutocompleteActivity() {
         try {
             // The autocomplete activity requires Google Play Services to be available. The intent
             // builder checks this and throws an exception if it is not the case.
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
-                    .build(this);
+            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
             startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE);
         } catch (GooglePlayServicesRepairableException e) {
             // Indicates that Google Play Services is either not installed or not up to date. Prompt
@@ -179,12 +191,49 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         return true;
     }
 
+    static View view;
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+
+        //Initializing variables needed for dialog
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        String[] colourArray = new String[]{"Red", "Blue", "Black", "Green", "Yellow", "Cyan", "Orange"};
+        view = findViewById(R.id.card_view);
+
+        //noinspection SimplifiableIfStatement
+        //Once the user makes a choice of the colour, it will change to the background colour
+        if (id == R.id.backgroundcolour) {
+            alert.setSingleChoiceItems(colourArray, -1, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if(which == 0)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#fc0000"));
+                    if(which == 1)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#0127ff"));
+                    if(which == 2)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#000000"));
+                    if(which == 3)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#04ca01"));
+                    if(which == 4)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#ffef13"));
+                    if(which == 5)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#79fffd"));
+                    if(which == 6)
+                        view.getRootView().setBackgroundColor(Color.parseColor("#ff7301"));
+
+                }
+            }).setCancelable(false).setPositiveButton("Continue", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            }).setTitle("Choose Background Colour").create().show();
+        }
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
@@ -242,32 +291,30 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         SimpleDateFormat shortenedDateFormat = new SimpleDateFormat("EEE MMM dd");
         return shortenedDateFormat.format(time);
     }
+
     public void getUnitType() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         String unitType = sharedPrefs.getString(getString(R.string.pref_units_key), getString(R.string.pref_units_metric));
         if (unitType.equals(getString(R.string.pref_units_imperial))) {
             isMetric = false;
-        }
-        else
+        } else
             isMetric = true;
         String preUnitType = sharedPrefs.getString(getString(R.string.pref_preunits_key), getString(R.string.pref_preunits_cm));
         if (preUnitType.equals(getString(R.string.pref_preunits_inch))) {
             isCentimeters = false;
-        }
-        else
+        } else
             isCentimeters = true;
         String windUnitType = sharedPrefs.getString(getString(R.string.pref_windunits_key), getString(R.string.pref_windunits_mph));
         if (windUnitType.equals(getString(R.string.pref_windunits_kph))) {
             isMph = false;
-        }
-        else
+        } else
             isMph = true;
 
     }
 
     public static String formatTemp(double value) {
         // For presentation, assume the user doesn't care about tenths of a degree.
-        if(isMetric == false) {
+        if (isMetric == false) {
             value = (value * 1.8) + 32;
         }
         long roundedValue = Math.round(value);
@@ -320,6 +367,46 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             e.printStackTrace();
         }
         return data;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://allen96.com.weatherboy/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://allen96.com.weatherboy/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
     }
 
 
