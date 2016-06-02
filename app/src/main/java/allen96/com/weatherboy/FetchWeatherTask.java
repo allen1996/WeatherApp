@@ -305,7 +305,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             cityText.setText(detailedWeatherShow.get(0));
             descriptionText.setText(capitaliseFirstLetter(detailedWeatherShow.get(1)));
             setIcon(icon, descriptionText.getText().toString());
-            temperatureText.setText(detailedWeatherShow.get(2));
+            temperatureText.setText(detailedWeatherShow.get(2) + "°");
             humidityText.append(detailedWeatherShow.get(3) + "%");
             pressureText.append(detailedWeatherShow.get(4) + " hPa");
             windSpeedText.append(detailedWeatherShow.get(7) + " " + detailedWeatherShow.get(5));

@@ -100,16 +100,6 @@
                 android:text="Wind: "
                 android:textSize="12sp" />
 
-            <TextView
-                android:id="@+id/detailed_sign"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@id/detailed_temperature"
-                android:layout_alignRight="@id/detailed_temperature"
-                android:layout_alignTop="@id/detailed_temperature"
-                android:text="°"
-                android:textSize="25sp" />
-
             <ImageView
                 android:layout_width="100dp"
                 android:layout_height="100dp"

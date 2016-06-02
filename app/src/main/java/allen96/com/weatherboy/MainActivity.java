@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerView.setAdapter(recyclerAdapter);
 
         //add places to the ArrayList and fetch current temp data for each city
-        //getUnitType();
+        getUnitType();
         places = new ArrayList<>();
         places.add("Auckland");
         places.add("Sydney");
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         db.execute(places);
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         lastUpdateTime = cal.getTime();
-       // recyclerAdapter.setLastUpdateTime(getCurrentTime());
+        recyclerAdapter.setLastUpdateTime(getCurrentTime());
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -172,6 +172,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 // Get the user's selected place from the Intent.
                 Place place = PlaceAutocomplete.getPlace(this, data);
                 Log.i(LOG_TAG, "Place Selected: " + place.getName());
+                places.add(place.getName().toString());
+                recyclerAdapter.notifyDataSetChanged();
+                db = new FetchCurrentWeatherTask();
+                db.execute(places);
                 Snackbar.make(recyclerView, place.getName() + " has been added", Snackbar.LENGTH_LONG).show();
 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
@@ -255,9 +259,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         //if the time difference between two updates is within 10 minutes
         // it should not execute the async task
-        if (timeDifference < 10) {
+        if (timeDifference < 1) {
             swipeRefreshLayout.setRefreshing(false);
-            Snackbar.make(recyclerView, "You have just updated " + timeDifference + " minutes ago.",
+            Snackbar.make(recyclerView, "Weather already updated.",
                     Snackbar.LENGTH_LONG).show();
         } else {
             lastUpdateTime = updateTime;
