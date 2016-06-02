@@ -1,15 +1,21 @@
 package allen96.com.weatherboy;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -24,11 +30,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
@@ -52,7 +60,7 @@ import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
-        WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener {
+        WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     /**
      * Request code for the autocomplete activity. This will be used to identify results from the
@@ -77,6 +85,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+
+    //------------------------------------------------------------------------
+    private GoogleApiClient mLocationClient;
+    private double lat;
+    private double longg;
+    //------------------------------------------------------------------------
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,17 +132,20 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerAdapter.attachRecyclerItemClickListener(this);
         recyclerView.setAdapter(recyclerAdapter);
 
+        mLocationClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+
+        mLocationClient.connect();
         //add places to the ArrayList and fetch current temp data for each city
         getUnitType();
         places = new ArrayList<>();
-        places.add("Auckland");
         places.add("Sydney");
         places.add("London");
         places.add("Hanoi");
         places.add("Bangkok");
-        places.add("Wellington");
         db = new FetchCurrentWeatherTask();
         db.execute(places);
+
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         lastUpdateTime = cal.getTime();
         recyclerAdapter.setLastUpdateTime(getCurrentTime());
@@ -136,6 +153,53 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
+
+    //-----------------------------------GPS LOCATION METHODS----------------------------------------------------
+    public void showCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            return;
+        }
+        Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
+        if(currentLocation == null){
+            Toast.makeText(this, "Couldnt Connect to find current location!", Toast.LENGTH_SHORT).show();
+        } else {
+            lat = currentLocation.getLatitude();
+            longg = currentLocation.getLongitude();
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            try {
+                List<Address> addresses = geocoder.getFromLocation(lat, longg, 1);
+                String city = addresses.get(0).getLocality();
+                places.add(0,city);
+                Toast.makeText(this, "Your current location is " + city, Toast.LENGTH_SHORT).show();
+            } catch (IOException e){
+            }
+        }
+    }
+    @Override
+    public void onConnected(Bundle bundle) {
+        showCurrentLocation();
+        db = new FetchCurrentWeatherTask();
+        db.execute(places);
+    }
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        places.add("Sydney");
+        places.add("London");
+        places.add("Hanoi");
+        places.add("Bangkok");
+        db = new FetchCurrentWeatherTask();
+        db.execute(places);
+    }
+//------------------------------------------------------------------------------------
+
 
     private void openAutocompleteActivity() {
         try {
@@ -412,6 +476,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
+
+
 
 
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {

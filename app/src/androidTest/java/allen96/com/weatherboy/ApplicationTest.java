@@ -1,6 +1,8 @@
 package allen96.com.weatherboy;
 
 import android.app.Application;
+import android.location.Address;
+import android.location.Geocoder;
 import android.test.ApplicationTestCase;
 
 import java.io.BufferedReader;
@@ -12,6 +14,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * <a href="http://d.android.com/tools/testing/testing_android.html">Testing Fundamentals</a>
@@ -86,6 +89,19 @@ public class ApplicationTest extends ApplicationTestCase<Application> {
         double defaultPrecipitation = 0.2;
         double defaultWindSpeed = 0.2;
         assertEquals(59.0, task.convertMetricToImperial(defaultMetricTemp));
+    }
 
+
+    public void testCityFromCoordinates(){
+        double lat = -36.848461;
+        double longg = 174.763336;
+        MainActivity ac = new MainActivity();
+        try {
+            Geocoder geocoder = new Geocoder(ac,Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(lat, longg, 1);
+            String city = addresses.get(0).getLocality();
+            assertEquals("Auckland",city);
+        } catch (IOException e){
+        }
     }
 }

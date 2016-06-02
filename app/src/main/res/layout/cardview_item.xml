@@ -38,7 +38,7 @@
             android:id="@+id/tv_temperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="20°"
+            android:text=""
             android:textSize="36sp"
             android:layout_below="@id/tv_description"
             android:layout_marginTop="12dp"
@@ -71,8 +71,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/imageView"
             android:layout_above="@+id/tv_temperature"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
             android:layout_alignLeft="@+id/tv_updateTimeLabel"
             android:layout_alignStart="@+id/tv_updateTimeLabel" />
 
