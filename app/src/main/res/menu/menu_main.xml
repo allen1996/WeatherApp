@@ -8,6 +8,11 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_location"
+        android:orderInCategory="10"
+        android:title="Find My Location"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/backgroundcolour"
         android:title="Backgound Colour"/>
 </menu>

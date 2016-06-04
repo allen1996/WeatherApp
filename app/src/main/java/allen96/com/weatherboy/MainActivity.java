@@ -1,6 +1,8 @@
 package allen96.com.weatherboy;
 
 import android.Manifest;
+import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,6 +13,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -22,6 +25,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.Time;
+import android.transition.Slide;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -37,6 +42,7 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 
@@ -56,11 +62,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
-        WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+        WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener, GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     /**
      * Request code for the autocomplete activity. This will be used to identify results from the
@@ -76,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private ArrayList<String> places;
     private SimpleDateFormat sdf;
     private Date lastUpdateTime;
+    private Place place;
 
     protected static boolean isMetric;
     protected static boolean isCentimeters;
@@ -100,6 +109,9 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setSupportActionBar(toolbar);
 
         sdf = new SimpleDateFormat("HH:mm a", Locale.getDefault());
+
+        places = new ArrayList<>();
+        places = readFromSharedPref();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         if (fab != null) {
@@ -132,26 +144,49 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerAdapter.attachRecyclerItemClickListener(this);
         recyclerView.setAdapter(recyclerAdapter);
 
-        mLocationClient = new GoogleApiClient.Builder(this)
-                .addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
-
-        mLocationClient.connect();
-        //add places to the ArrayList and fetch current temp data for each city
-        getUnitType();
-        places = new ArrayList<>();
-        places.add("Sydney");
-        places.add("London");
-        places.add("Hanoi");
-        places.add("Bangkok");
-        db = new FetchCurrentWeatherTask();
-        db.execute(places);
-
+        //set update time
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         lastUpdateTime = cal.getTime();
         recyclerAdapter.setLastUpdateTime(getCurrentTime());
+
+        //get user location using GPS
+        mLocationClient = new GoogleApiClient.Builder(this)
+                .addApi(LocationServices.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
+        mLocationClient.connect();
+
+        getUnitType();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        setupWindowAnimations();
+    }
+
+    protected void saveToSharedPref(List<String> list) {
+        SharedPreferences sharedPref = getSharedPreferences(
+                "city_sharePref", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        for (String city : places) {
+            editor.putString(city, city);
+        }
+        editor.commit();
+    }
+
+    protected ArrayList<String> readFromSharedPref() {
+        ArrayList<String> cities = new ArrayList<>();
+
+        SharedPreferences sharedPref = getSharedPreferences(
+                "city_sharePref", Context.MODE_PRIVATE);
+        Set<String> allValues= sharedPref.getAll().keySet();
+        for (String city : allValues) {
+            cities.add(city);
+        }
+        return cities;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void setupWindowAnimations() {
+        Slide slide = (Slide) TransitionInflater.from(this).inflateTransition(R.transition.activity_slide);
+        getWindow().setExitTransition(slide);
     }
 
     //-----------------------------------GPS LOCATION METHODS----------------------------------------------------
@@ -165,7 +200,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
         Location currentLocation = LocationServices.FusedLocationApi.getLastLocation(mLocationClient);
         if(currentLocation == null){
-            Toast.makeText(this, "Couldnt Connect to find current location!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please turn on the GPS setting!", Toast.LENGTH_SHORT).show();
         } else {
             lat = currentLocation.getLatitude();
             longg = currentLocation.getLongitude();
@@ -173,28 +208,32 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             try {
                 List<Address> addresses = geocoder.getFromLocation(lat, longg, 1);
                 String city = addresses.get(0).getLocality();
-                places.add(0,city);
+                if (!places.contains(city)) {
+                    places.add(0,city);
+                }
                 Toast.makeText(this, "Your current location is " + city, Toast.LENGTH_SHORT).show();
             } catch (IOException e){
             }
         }
     }
+
     @Override
     public void onConnected(Bundle bundle) {
+        startRefreshing();
+        Log.d("GPS", "onConnected");
         showCurrentLocation();
         db = new FetchCurrentWeatherTask();
         db.execute(places);
     }
+
     @Override
     public void onConnectionSuspended(int i) {
 
     }
+
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        places.add("Sydney");
-        places.add("London");
-        places.add("Hanoi");
-        places.add("Bangkok");
+        Log.d("GPS", "onConnectionFailed");
         db = new FetchCurrentWeatherTask();
         db.execute(places);
     }
@@ -205,7 +244,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         try {
             // The autocomplete activity requires Google Play Services to be available. The intent
             // builder checks this and throws an exception if it is not the case.
-            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN).build(this);
+            AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
+                    .setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES)
+                    .build();
+            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                    .setFilter(typeFilter).build(this);
             startActivityForResult(intent, REQUEST_CODE_AUTOCOMPLETE);
         } catch (GooglePlayServicesRepairableException e) {
             // Indicates that Google Play Services is either not installed or not up to date. Prompt
@@ -234,13 +277,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         if (requestCode == REQUEST_CODE_AUTOCOMPLETE) {
             if (resultCode == RESULT_OK) {
                 // Get the user's selected place from the Intent.
-                Place place = PlaceAutocomplete.getPlace(this, data);
-                Log.i(LOG_TAG, "Place Selected: " + place.getName());
-                places.add(place.getName().toString());
-                recyclerAdapter.notifyDataSetChanged();
-                db = new FetchCurrentWeatherTask();
-                db.execute(places);
-                Snackbar.make(recyclerView, place.getName() + " has been added", Snackbar.LENGTH_LONG).show();
+                place = PlaceAutocomplete.getPlace(this, data);
+                String cityName = place.getName().toString();
+                if (!places.contains(cityName)) {
+                    places.add(cityName);
+                    db = new FetchCurrentWeatherTask();
+                    db.execute(places);
+                    stopRefreshing(2);
+                } else {
+                    Snackbar.make(recyclerView, cityName + " has already existed.", Snackbar.LENGTH_LONG).show();
+                }
 
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
@@ -308,6 +354,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         }
+
+        if (id == R.id.action_location) {
+            showCurrentLocation();
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -326,14 +376,25 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         if (timeDifference < 1) {
             swipeRefreshLayout.setRefreshing(false);
             Snackbar.make(recyclerView, "Weather already updated.",
-                    Snackbar.LENGTH_LONG).show();
+                    Snackbar.LENGTH_SHORT).show();
         } else {
             lastUpdateTime = updateTime;
             recyclerAdapter.setLastUpdateTime(getCurrentTime());
             db = new FetchCurrentWeatherTask();
             db.execute(places);
-            swipeRefreshLayout.setRefreshing(false);
-            Snackbar.make(recyclerView, "Weather has been updated", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    private void startRefreshing() {
+        swipeRefreshLayout.setRefreshing(true);
+    }
+
+    private void stopRefreshing(int source) {
+        swipeRefreshLayout.setRefreshing(false);
+        if (source == 1) {
+            Snackbar.make(recyclerView, "Weather has been updated", Snackbar.LENGTH_SHORT).show();
+        } else {
+            Snackbar.make(recyclerView, place.getName() + " has been added", Snackbar.LENGTH_SHORT).show();
         }
     }
 
@@ -382,12 +443,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     public static String formatTemp(double value) {
         // For presentation, assume the user doesn't care about tenths of a degree.
-        if (isMetric == false) {
+        if (!isMetric) {
             value = (value * 1.8) + 32;
         }
         long roundedValue = Math.round(value);
-        String formattedValue = String.valueOf(roundedValue);
-        return formattedValue;
+        return String.valueOf(roundedValue);
     }
 
     public static List<String> getCurrentWeather(String forecastJsonStr, int numDays) {
@@ -458,9 +518,16 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("log", "onDestroy");
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
-
+        Log.d("log", "onStop");
+        saveToSharedPref(places);
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         Action viewAction = Action.newAction(
@@ -567,6 +634,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (dummyData != null) {
                 recyclerAdapter.updateWeatherList(dummyData);
                 recyclerAdapter.notifyDataSetChanged();
+                stopRefreshing(1);
             }
         }
     }
