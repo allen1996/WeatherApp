@@ -84,11 +84,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private ArrayList<String> places;
     private SimpleDateFormat sdf;
     private Date lastUpdateTime;
-    private Place place;
 
     protected static boolean isMetric;
     protected static boolean isCentimeters;
     protected static boolean isMph;
+
+    private static View view;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -110,7 +111,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         sdf = new SimpleDateFormat("HH:mm a", Locale.getDefault());
 
-        places = new ArrayList<>();
         places = readFromSharedPref();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -139,8 +139,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerView.setLayoutManager(llm);
 
         //create and set the recycler adapter
-        recyclerAdapter = new WeatherInfoRecyclerAdapter(
-                Database.createDummyWeatherData());
+        recyclerAdapter = new WeatherInfoRecyclerAdapter(Database.createDummyWeatherData(places));
         recyclerAdapter.attachRecyclerItemClickListener(this);
         recyclerAdapter.attachRecyclerItemLongClickListener(this);
         recyclerView.setAdapter(recyclerAdapter);
@@ -156,6 +155,11 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mLocationClient.connect();
 
         getUnitType();
+
+        //fetch weather data
+        db = new FetchCurrentWeatherTask(1);
+        db.execute(places);
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -210,7 +214,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 List<Address> addresses = geocoder.getFromLocation(lat, longg, 1);
                 String city = addresses.get(0).getLocality();
                 if (!places.contains(city)) {
-                    places.add(0,city);
+                    places.add(0, city);
+                    db = new FetchCurrentWeatherTask(3);
+                    startRefreshing();
+                    db.execute(places);
+                } else {
+                    Snackbar.make(recyclerView, city + " has already existed.", Snackbar.LENGTH_LONG).show();
                 }
                 Toast.makeText(this, "Your current location is " + city, Toast.LENGTH_SHORT).show();
             } catch (IOException e){
@@ -222,9 +231,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     public void onConnected(Bundle bundle) {
         startRefreshing();
         Log.d("GPS", "onConnected");
-        showCurrentLocation();
-        db = new FetchCurrentWeatherTask();
-        db.execute(places);
     }
 
     @Override
@@ -235,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         Log.d("GPS", "onConnectionFailed");
-        db = new FetchCurrentWeatherTask();
+        db = new FetchCurrentWeatherTask(1);
         db.execute(places);
     }
 //------------------------------------------------------------------------------------
@@ -278,14 +284,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         if (requestCode == REQUEST_CODE_AUTOCOMPLETE) {
             if (resultCode == RESULT_OK) {
                 // Get the user's selected place from the Intent.
-                place = PlaceAutocomplete.getPlace(this, data);
+                Place place = PlaceAutocomplete.getPlace(this, data);
                 String cityName = place.getName().toString();
                 if (!places.contains(cityName)) {
                     places.add(cityName);
-                    db = new FetchCurrentWeatherTask();
+                    db = new FetchCurrentWeatherTask(2);
                     startRefreshing();
                     db.execute(places);
-                    stopRefreshing(2);
                 } else {
                     Snackbar.make(recyclerView, cityName + " has already existed.", Snackbar.LENGTH_LONG).show();
                 }
@@ -306,8 +311,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
-    static View view;
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -382,8 +385,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         } else {
             lastUpdateTime = updateTime;
             recyclerAdapter.setLastUpdateTime(getCurrentTime());
-            db = new FetchCurrentWeatherTask();
+            db = new FetchCurrentWeatherTask(1);
+            startRefreshing();
             db.execute(places);
+            stopRefreshing(1);
         }
     }
 
@@ -395,8 +400,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         swipeRefreshLayout.setRefreshing(false);
         if (source == 1) {
             Snackbar.make(recyclerView, "Weather has been updated", Snackbar.LENGTH_SHORT).show();
+        } else if (source == 2) {
+            Snackbar.make(recyclerView, places.get(places.size() - 1) +
+                    " has been added", Snackbar.LENGTH_SHORT).show();
         } else {
-            Snackbar.make(recyclerView, place.getName() + " has been added", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(recyclerView, places.get(0) +
+                    " has been added", Snackbar.LENGTH_SHORT).show();
         }
     }
 
@@ -577,6 +586,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {
 
+        private int source;
+
+        public FetchCurrentWeatherTask(int source) {
+            this.source = source;
+        }
+
         @Override
         protected List<WeatherInfo> doInBackground(ArrayList<String>... params) {
             if (params.length == 0) {
@@ -662,7 +677,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             if (dummyData != null) {
                 recyclerAdapter.updateWeatherList(dummyData);
                 recyclerAdapter.notifyDataSetChanged();
-                stopRefreshing(1);
+                stopRefreshing(source);
             }
         }
     }
