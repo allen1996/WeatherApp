@@ -68,7 +68,7 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,
         WeatherInfoRecyclerAdapter.OnRecyclerItemClickListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener, WeatherInfoRecyclerAdapter.OnRecyclerItemLongClickListener {
 
     /**
      * Request code for the autocomplete activity. This will be used to identify results from the
@@ -142,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         recyclerAdapter = new WeatherInfoRecyclerAdapter(
                 Database.createDummyWeatherData());
         recyclerAdapter.attachRecyclerItemClickListener(this);
+        recyclerAdapter.attachRecyclerItemLongClickListener(this);
         recyclerView.setAdapter(recyclerAdapter);
 
         //set update time
@@ -158,13 +159,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-        setupWindowAnimations();
     }
 
     protected void saveToSharedPref(List<String> list) {
         SharedPreferences sharedPref = getSharedPreferences(
                 "city_sharePref", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
+        editor.clear();
         for (String city : places) {
             editor.putString(city, city);
         }
@@ -282,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 if (!places.contains(cityName)) {
                     places.add(cityName);
                     db = new FetchCurrentWeatherTask();
+                    startRefreshing();
                     db.execute(places);
                     stopRefreshing(2);
                 } else {
@@ -411,7 +413,36 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         String locationString = weatherInfoString.currentLocation;
         Intent intent = new Intent(this, DetailActivity.class).putExtra(Intent.EXTRA_TEXT, locationString);
         startActivity(intent);
-        Log.d(LOG_TAG, "new activity/fragment for item at position " + position);
+        Log.d("listener", "click at " + position);
+    }
+
+    @Override
+    public void onRecyclerItemLongClick(View view, int position) {
+        Log.d("listener", "long click at " + position);
+        setUpYesNoDialog(position);
+    }
+
+    public void setUpYesNoDialog(final int position) {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int choice) {
+                switch (choice) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        recyclerAdapter.mWeatherLists.remove(position);
+                        places.remove(position);
+                        recyclerAdapter.notifyItemRemoved(position);
+                        recyclerAdapter.notifyItemRangeChanged(position, recyclerAdapter.mWeatherLists.size());
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Delete this city?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener).show();
     }
 
     private static String getReadableDateString(long time) {
@@ -543,9 +574,6 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
-
-
-
 
     public class FetchCurrentWeatherTask extends AsyncTask<ArrayList<String>, Void, List<WeatherInfo>> {
 

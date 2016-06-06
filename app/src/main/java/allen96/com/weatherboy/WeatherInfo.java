@@ -14,4 +14,10 @@ public class WeatherInfo {
         this.weatherDescription = weatherDescription;
         this.temperature = temperature;
     }
+
+    public WeatherInfo(String currentLocation) {
+        this.currentLocation = currentLocation;
+        weatherDescription = "cloudy";
+        temperature = "21";
+    }
 }

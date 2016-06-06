@@ -1,7 +1,5 @@
 package allen96.com.weatherboy;
 
-import android.media.Image;
-import android.provider.ContactsContract;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,8 +16,9 @@ import java.util.List;
 public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         <WeatherInfoRecyclerAdapter.WeatherInfoViewHolder> {
 
-    private List<WeatherInfo> mWeatherLists;
-    static OnRecyclerItemClickListener listener;
+    protected List<WeatherInfo> mWeatherLists;
+    private static OnRecyclerItemClickListener listener;
+    private static OnRecyclerItemLongClickListener longClickListener;
 
     private String lastUpdateTime = "11:02 AM";
 
@@ -93,8 +92,16 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         void onRecyclerItemClick(View view, int position);
     }
 
+    public interface OnRecyclerItemLongClickListener {
+        void onRecyclerItemLongClick(View view, int position);
+    }
+
     public void attachRecyclerItemClickListener(OnRecyclerItemClickListener listener) {
         WeatherInfoRecyclerAdapter.listener = listener;
+    }
+
+    public void attachRecyclerItemLongClickListener(OnRecyclerItemLongClickListener listener) {
+        WeatherInfoRecyclerAdapter.longClickListener = listener;
     }
 
     public List<WeatherInfo> getList() {
@@ -109,7 +116,8 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         this.lastUpdateTime = lastUpdateTime;
     }
 
-    public static class WeatherInfoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public static class WeatherInfoViewHolder extends RecyclerView.ViewHolder implements
+            View.OnClickListener, View.OnLongClickListener{
 
         protected TextView mLocation;
         protected TextView mDescription;
@@ -119,6 +127,7 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         public WeatherInfoViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
             mLocation = (TextView) itemView.findViewById(R.id.tv_location);
             mDescription = (TextView) itemView.findViewById(R.id.tv_description);
             mTemperature = (TextView) itemView.findViewById(R.id.tv_temperature);
@@ -135,6 +144,12 @@ public class WeatherInfoRecyclerAdapter extends RecyclerView.Adapter
         public void onClick(View v) {
             Log.d(LOG_TAG, String.valueOf(getAdapterPosition()));
             listener.onRecyclerItemClick(v, getAdapterPosition());
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            longClickListener.onRecyclerItemLongClick(v, getAdapterPosition());
+            return false;
         }
     }
 
