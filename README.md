@@ -12,7 +12,7 @@ This is a group assignment for Software Development Practice where we learn how 
 <img src="http://allen1996.github.io/scrollLoading/images/weather_main.jpg" alt="main" width="360px">
 <img src="http://allen1996.github.io/scrollLoading/images/weather_detail.jpg" alt="detail" width="360px"> <br>
 *Figure 1 & 2: Current and detailed weather displayed*
-<br><br><br>
+<br><br>
 <img src="http://allen1996.github.io/scrollLoading/images/weather_swipeRefresh.jpg" alt="swipeRefresh" width="360px">
 <img src="http://allen1996.github.io/scrollLoading/images/weather_autocomplete.jpg" alt="autocomplete" width="360px"> <br>
 *Figure 3 & 4: Swipe to refresh and Google Place Auto-complete features*
