@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         //fetch weather data
         db = new FetchCurrentWeatherTask(1);
+        startRefreshFromNewThread();
         db.execute(places);
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -388,8 +389,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             db = new FetchCurrentWeatherTask(1);
             startRefreshing();
             db.execute(places);
-            stopRefreshing(1);
         }
+    }
+
+    private void startRefreshFromNewThread() {
+        swipeRefreshLayout.post(new Runnable() {
+
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(true);
+            }
+        });
     }
 
     private void startRefreshing() {
