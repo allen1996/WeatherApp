@@ -174,6 +174,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         for (String city : places) {
             editor.putString(city, city);
         }
+        editor.putBoolean("first_time", false);
         editor.commit();
     }
 
@@ -182,9 +183,19 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
         SharedPreferences sharedPref = getSharedPreferences(
                 "city_sharePref", Context.MODE_PRIVATE);
-        Set<String> allValues= sharedPref.getAll().keySet();
-        for (String city : allValues) {
-            cities.add(city);
+        if (sharedPref.getBoolean("first_time", true)) {
+            Log.e("sharep", "true");
+            cities.add("Auckland");
+            sharedPref.edit().putBoolean("first_time", false).commit();
+        }
+        else {
+            Log.e("sharep", "false");
+            Set<String> allValues= sharedPref.getAll().keySet();
+            for (String city : allValues) {
+                if (!city.equals("first_time")) {
+                    cities.add(city);
+                }
+            }
         }
         return cities;
     }
