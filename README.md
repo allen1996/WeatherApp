@@ -13,6 +13,6 @@ This is a group assignment for Software Development Practice where we learn how 
 <img src="https://github.com/allen1996/WeatherApp/blob/master/screenshot/weather_detail.png" alt="detail" width="360px"> <br>
 *Figure 1 & 2: Current and detailed weather displayed*
 <br><br>
-<img src="https://github.com/allen1996/WeatherApp/blob/master/screenshot/weather_autocomplete.png" alt="swipeRefresh" width="360px">
-<img src="https://github.com/allen1996/WeatherApp/blob/master/screenshot/weather_swipeRefresh.png" alt="autocomplete" width="360px"> <br>
+<img src="https://github.com/allen1996/WeatherApp/blob/master/screenshot/weather_swipeRefresh.png" alt="swipeRefresh" width="360px">
+<img src="https://github.com/allen1996/WeatherApp/blob/master/screenshot/weather_autocomplete.png" alt="autocomplete" width="360px"> <br>
 *Figure 3 & 4: Swipe to refresh and Google Place Auto-complete features*
